@@ -1,17 +1,20 @@
 # TV Audio and Video Parser
 
 ## Project Overview
+
 This C/C++ project demonstrates advanced data structures and algorithms in action through a TV audio and video parser application. The parser processes binary data streams from different TV channels, separating audio and video content using efficient data structures.
 
 ## Key Features
 
 ### Data Structures Implementation
+
 - **Circular Buffer**: Efficient storage of incoming raw data packets
 - **HashMap**: Fast O(1) lookup of channels and stream types
 - **Sorted Singly Linked List**: Maintains packet sequence order for proper playback
 - **Stack & Queue**: Used for various processing operations
 
 ### Parser Capabilities
+
 - Processes binary TV packet data
 - Separates audio and video streams
 - Organizes data by channel and stream type
@@ -19,7 +22,7 @@ This C/C++ project demonstrates advanced data structures and algorithms in actio
 
 ## 🌟 Interactive Visualization
 
-The project now includes an interactive web-based visualization that provides a compelling visual representation of the parsing process. This visualization allows viewers to:
+The project includes an interactive web-based visualization that provides a compelling visual representation of the parsing process. This visualization allows viewers to:
 
 - **See the Circular Buffer in action**: Watch as raw data moves through the buffer
 - **View channel streams**: Observe how audio and video packets are organized by channel
@@ -28,25 +31,55 @@ The project now includes an interactive web-based visualization that provides a 
 
 ![TV Parser Visualization](visualization/screenshot.png)
 
-### How to Run the Visualization
+### Online Demo
+
+A standalone version of the visualization is deployed and available online:
+
+**[View Live Demo](https://maitisoutrik.github.io/tv-parser-visualization/)**
+
+This deployed version uses sample data and doesn't require the C++ backend to run.
+
+### Local Visualization with Live Data
+
+To run the visualization with live data from the C++ application:
 
 1. Compile and run the main application:
+
    ```bash
    make
    ./tv_parser_app
    ```
 
-2. Start a simple HTTP server in the project directory:
+2. Use one of the provided scripts to start a local server:
+
+   ```bash
+   # For Bash users
+   ./run_visualization.sh
+   
+   # For Fish shell users
+   ./run_visualization.fish
+   ```
+
+3. Or manually start a simple HTTP server in the project directory:
+
    ```bash
    python -m http.server
    ```
 
-3. Open your browser and navigate to:
-   ```
-   http://localhost:8000/visualization/
+4. Open your browser and navigate to:
+
+   ```text
+   http://localhost:8000/
    ```
 
-4. Use the interactive controls to start, pause, and reset the visualization
+5. Use the interactive controls to start, pause, and reset the visualization
+
+### Architecture
+
+The visualization has two components:
+
+1. **C++ Backend**: The `DataExporter` class in `visualization/data_exporter.h` exports processed data as JSON files
+2. **JavaScript Frontend**: The visualization reads these JSON files and renders the interactive UI
 
 ## Technical Implementation
 

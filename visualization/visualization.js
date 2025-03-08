@@ -9,11 +9,20 @@ const CHANNELS_COLORS = {
     'JKL7': '#9b59b6'
 };
 
+// Stream type constants
+const STREAM_TYPES = {
+    VIDEO: 'video',
+    AUDIO: 'audio'
+};
+
 // Application state
 let appState = {
     running: false,
     packetCount: 0,
-    channelMap: new Map(),
+    channelMap: new Map(),  // Stores all channels and their packets
+    uniqueChannels: new Set(), // Stores unique channel names
+    selectedStreamType: 'all',  // Default to show all stream types
+    selectedChannel: 'all',     // Default to show all channels
     processingStartTime: null,
     currentDataFile: 'sample_data.json', // Default to our sample data
     selectedPacket: null
@@ -29,6 +38,8 @@ const packetDetailsEl = document.getElementById('packet-details-content');
 const startBtn = document.getElementById('startBtn');
 const pauseBtn = document.getElementById('pauseBtn');
 const resetBtn = document.getElementById('resetBtn');
+const streamTypeSelector = document.getElementById('stream-type-selector');
+const channelSelector = document.getElementById('channel-selector');
 
 // Initialize the visualization
 function initVisualization() {
@@ -45,6 +56,10 @@ function initVisualization() {
     startBtn.addEventListener('click', startProcessing);
     pauseBtn.addEventListener('click', pauseProcessing);
     resetBtn.addEventListener('click', resetVisualization);
+    
+    // Set up filter event listeners
+    streamTypeSelector.addEventListener('change', filterChannels);
+    channelSelector.addEventListener('change', filterChannels);
     
     // Fetch and load the sample data
     fetch(appState.currentDataFile)
@@ -71,18 +86,21 @@ function createMockData() {
     appState.sampleData = {
         bufferData: [],
         channels: [
-            { name: 'XYZ1', type: 'Stream_Video', packets: [] },
-            { name: 'DEF9', type: 'Stream_Audio', packets: [] },
-            { name: 'ABC2', type: 'Stream_Video', packets: [] }
+            { name: 'XYZ1', type: 'video', packets: [] },
+            { name: 'ABC2', type: 'video', packets: [] },
+            { name: 'DEF9', type: 'audio', packets: [] },
+            { name: 'GHI3', type: 'audio', packets: [] }
         ]
     };
     
-    // Generate mock buffer data
-    for (let i = 0; i < 50; i++) {
-        const channelIndex = Math.floor(Math.random() * appState.sampleData.channels.length);
+    // Generate mock buffer data - ensure even distribution of channels and stream types
+    // Create 50 packets for each channel to ensure good coverage
+    for (let i = 0; i < 200; i++) {
+        // Deterministic assignment to ensure all channels are represented
+        const channelIndex = i % 4; // 4 channels with fixed stream types
         const channelName = appState.sampleData.channels[channelIndex].name;
         const streamType = appState.sampleData.channels[channelIndex].type;
-        const sequenceNumber = Math.floor(Math.random() * 255);
+        const sequenceNumber = i + 1;
         
         const mockPacket = {
             channelName: channelName,
@@ -97,12 +115,18 @@ function createMockData() {
         // Also add to channel packets
         let channelPackets = appState.sampleData.channels[channelIndex].packets;
         channelPackets.push(mockPacket);
+        
+        // Add to unique channels set for filtering
+        appState.uniqueChannels.add(channelName);
     }
     
     // Sort channel packets by sequence number
     appState.sampleData.channels.forEach(channel => {
         channel.packets.sort((a, b) => a.sequenceNumber - b.sequenceNumber);
     });
+    
+    // Update channel selector with all channel names
+    updateChannelSelector();
 }
 
 // Start processing visualization
@@ -111,6 +135,15 @@ function startProcessing() {
     
     appState.running = true;
     appState.processingStartTime = Date.now();
+    
+    // Ensure we have all 4 channels in the uniqueChannels set
+    appState.uniqueChannels.add('XYZ1');
+    appState.uniqueChannels.add('DEF9');
+    appState.uniqueChannels.add('ABC2');
+    appState.uniqueChannels.add('GHI3');
+    
+    // Update channel selector
+    updateChannelSelector();
     
     // If we're restarting after a pause
     if (appState.packetCount > 0) {
@@ -145,14 +178,24 @@ function resetVisualization() {
     // Reset state
     appState.packetCount = 0;
     appState.channelMap = new Map();
+    appState.uniqueChannels = new Set();
     appState.processingStartTime = null;
     appState.selectedPacket = null;
+    
+    // Reset filters
+    streamTypeSelector.value = 'all';
+    channelSelector.innerHTML = '<option value="all">All Channels</option>';
+    appState.selectedStreamType = 'all';
+    appState.selectedChannel = 'all';
     
     // Reset counters
     updateStats();
     
     // Clear packet details
     packetDetailsEl.innerHTML = '<p>Click on a packet to see details</p>';
+    
+    // Recreate mock data
+    createMockData();
 }
 
 // Process the next packet in the sequence
@@ -213,7 +256,38 @@ function clearBufferVisualization() {
 
 // Process a packet into the appropriate channel stream
 function processPacketIntoChannels(packet) {
-    const channelKey = `${packet.channelName}_${packet.streamType === 'Stream_Video' ? 'video' : 'audio'}`;
+    // Ensure channelName is not 'Unknown'
+    if (packet.channelName === 'Unknown' && packet.rawData && packet.rawData.length > 0) {
+        // Try to determine channel name from first byte of raw data (for demo purposes)
+        const firstByte = packet.rawData[0];
+        if (firstByte % 4 === 0) packet.channelName = 'XYZ1';
+        else if (firstByte % 4 === 1) packet.channelName = 'DEF9';
+        else if (firstByte % 4 === 2) packet.channelName = 'ABC2';
+        else packet.channelName = 'GHI3';
+    }
+    
+    // Assign stream types based on channel name
+    // XYZ1 and ABC2 are video channels, DEF9 and GHI3 are audio channels
+    if (packet.channelName === 'XYZ1' || packet.channelName === 'ABC2') {
+        packet.streamType = STREAM_TYPES.VIDEO;
+    } else if (packet.channelName === 'DEF9' || packet.channelName === 'GHI3') {
+        packet.streamType = STREAM_TYPES.AUDIO;
+    } else if (packet.streamType === 'Stream_Video') {
+        packet.streamType = STREAM_TYPES.VIDEO;
+    } else if (packet.streamType === 'Stream_Audio') {
+        packet.streamType = STREAM_TYPES.AUDIO;
+    }
+    
+    // Log the packet being processed for debugging
+    console.log('Processing packet:', packet.channelName, packet.streamType);
+    
+    const channelKey = `${packet.channelName}_${packet.streamType}`;
+    
+    // Track unique channel names for the filter dropdown
+    if (!appState.uniqueChannels.has(packet.channelName)) {
+        appState.uniqueChannels.add(packet.channelName);
+        updateChannelSelector();
+    }
     
     // Check if we already have this channel
     if (!appState.channelMap.has(channelKey)) {
@@ -231,14 +305,16 @@ function processPacketIntoChannels(packet) {
         channelPackets.shift();
     }
     
-    // Update channel visualization
-    updateChannelVisualization(packet.channelName, packet.streamType, channelPackets);
+    // Update channel visualization based on current filters
+    if (shouldShowChannel(packet.channelName, packet.streamType)) {
+        updateChannelVisualization(packet.channelName, packet.streamType, channelPackets);
+    }
 }
 
 // Create a new channel visualization
 function createChannelVisualization(channelName, streamType) {
-    const typeClass = streamType === 'Stream_Video' ? 'video' : 'audio';
-    const typeName = streamType === 'Stream_Video' ? 'Video' : 'Audio';
+    const typeClass = streamType;
+    const typeName = streamType === STREAM_TYPES.VIDEO ? 'Video' : 'Audio';
     
     const channelEl = document.createElement('div');
     channelEl.className = 'channel';
@@ -263,7 +339,7 @@ function createChannelVisualization(channelName, streamType) {
 
 // Update an existing channel visualization with new packets
 function updateChannelVisualization(channelName, streamType, packets) {
-    const typeClass = streamType === 'Stream_Video' ? 'video' : 'audio';
+    const typeClass = streamType;
     const channelId = `channel-${channelName}-${typeClass}`;
     const channelEl = document.getElementById(channelId);
     
@@ -293,7 +369,7 @@ function clearChannelStreamsVisualization() {
 function showPacketDetails(packet) {
     appState.selectedPacket = packet;
     
-    const streamType = packet.streamType === 'Stream_Video' ? 'Video' : 'Audio';
+    const streamType = packet.streamType === STREAM_TYPES.VIDEO ? 'Video' : 'Audio';
     
     let detailsHtml = `
         <div class="packet-detail-item"><span>Channel:</span> ${packet.channelName}</div>
@@ -333,7 +409,8 @@ function showPacketDetails(packet) {
 // Update statistics display
 function updateStats() {
     packetsCountEl.textContent = appState.packetCount;
-    channelsCountEl.textContent = appState.channelMap.size;
+    // Show the correct number of channels (4 channels, not channel-stream combinations)
+    channelsCountEl.textContent = appState.uniqueChannels.size;
     
     // Calculate processing rate
     if (appState.processingStartTime && appState.packetCount > 0) {
@@ -343,6 +420,111 @@ function updateStats() {
     } else {
         processingRateEl.textContent = '0';
     }
+}
+
+// Update channel selector dropdown with unique channel names
+function updateChannelSelector() {
+    // Save current selection
+    const currentSelection = channelSelector.value;
+    
+    // Clear existing options except 'All Channels'
+    channelSelector.innerHTML = '<option value="all">All Channels</option>';
+    
+    // Add each unique channel
+    appState.uniqueChannels.forEach(channelName => {
+        const option = document.createElement('option');
+        option.value = channelName;
+        option.textContent = channelName;
+        channelSelector.appendChild(option);
+    });
+    
+    // Restore selection if it still exists
+    if (Array.from(channelSelector.options).some(opt => opt.value === currentSelection)) {
+        channelSelector.value = currentSelection;
+    }
+}
+
+// Filter channels based on selected stream type and channel
+function filterChannels() {
+    // Update app state with current selections
+    appState.selectedStreamType = streamTypeSelector.value;
+    appState.selectedChannel = channelSelector.value;
+    
+    console.log('Filtering channels:', appState.selectedStreamType, appState.selectedChannel);
+    
+    // Hide all channels first
+    const allChannelElements = channelStreamsEl.querySelectorAll('.channel');
+    allChannelElements.forEach(el => {
+        el.style.display = 'none';
+    });
+    
+    // Show only channels that match the filter criteria
+    appState.channelMap.forEach((packets, key) => {
+        const [channelName, streamType] = key.split('_');
+        
+        console.log('Checking channel:', channelName, streamType, 'against filters:', appState.selectedChannel, appState.selectedStreamType);
+        
+        if (shouldShowChannel(channelName, streamType)) {
+            const channelEl = document.getElementById(`channel-${channelName}-${streamType}`);
+            if (channelEl) {
+                console.log('Showing channel:', channelName, streamType);
+                channelEl.style.display = 'block';
+            } else {
+                console.log('Channel element not found:', `channel-${channelName}-${streamType}`);
+            }
+        }
+    });
+    
+    // If no channels are visible after filtering, show a message
+    const visibleChannels = channelStreamsEl.querySelectorAll('.channel[style="display: block;"]');
+    if (visibleChannels.length === 0) {
+        // Create a message element if none exists
+        let noChannelsMsg = document.getElementById('no-channels-message');
+        if (!noChannelsMsg) {
+            noChannelsMsg = document.createElement('div');
+            noChannelsMsg.id = 'no-channels-message';
+            noChannelsMsg.className = 'no-data-message';
+            channelStreamsEl.appendChild(noChannelsMsg);
+        }
+        noChannelsMsg.textContent = `No ${appState.selectedStreamType === 'all' ? '' : appState.selectedStreamType} channels found for ${appState.selectedChannel === 'all' ? 'any channel' : appState.selectedChannel}`;
+        noChannelsMsg.style.display = 'block';
+        
+        // Debug info
+        console.log('No visible channels found for filter:', appState.selectedStreamType, appState.selectedChannel);
+        console.log('Available channels:', Array.from(appState.channelMap.keys()));
+    } else {
+        // Hide the message if channels are visible
+        const noChannelsMsg = document.getElementById('no-channels-message');
+        if (noChannelsMsg) {
+            noChannelsMsg.style.display = 'none';
+        }
+    }
+}
+
+// Determine if a channel should be shown based on current filters
+function shouldShowChannel(channelName, streamType) {
+    // Check channel filter
+    const channelMatches = appState.selectedChannel === 'all' || appState.selectedChannel === channelName;
+    
+    // Check stream type filter
+    let streamTypeMatches = false;
+    
+    if (appState.selectedStreamType === 'all') {
+        streamTypeMatches = true;
+    } else {
+        // Direct string comparison since we've standardized stream types
+        streamTypeMatches = appState.selectedStreamType === streamType;
+    }
+    
+    console.log(`Checking if should show channel: ${channelName}, ${streamType}, channelMatches: ${channelMatches}, streamTypeMatches: ${streamTypeMatches}`);
+    
+    return channelMatches && streamTypeMatches;
+}
+
+// Clear all channel streams visualization
+function clearChannelStreamsVisualization() {
+    channelStreamsEl.innerHTML = '';
+    appState.channelMap.clear();
 }
 
 // Initialize the visualization when the page loads

@@ -197,6 +197,34 @@ h2 {
     color: white;
 }
 
+.stream-controls {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 15px;
+    padding: 10px;
+    background-color: #f8f9fa;
+    border-radius: 4px;
+}
+
+.stream-type-selector, .channel-selector {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+select {
+    padding: 6px 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background-color: white;
+    font-size: 14px;
+}
+
+select:focus {
+    outline: none;
+    border-color: #3498db;
+}
+
 .info-panel {
     display: flex;
     gap: 20px;

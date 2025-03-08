@@ -27,6 +27,22 @@
             
             <div class="parsed-data-section">
                 <h2>Parsed Streams</h2>
+                <div class="stream-controls">
+                    <div class="stream-type-selector">
+                        <label>Stream Type:</label>
+                        <select id="stream-type-selector">
+                            <option value="all">All Streams</option>
+                            <option value="video">Video</option>
+                            <option value="audio">Audio</option>
+                        </select>
+                    </div>
+                    <div class="channel-selector">
+                        <label>Channel:</label>
+                        <select id="channel-selector">
+                            <option value="all">All Channels</option>
+                        </select>
+                    </div>
+                </div>
                 <div id="channel-streams" class="data-structure">
                     <!-- Channel streams will be added here -->
                 </div>
