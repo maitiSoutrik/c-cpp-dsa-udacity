@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TV Parser Visualization</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>TV Audio/Video Parser Visualization</h1>
+            <div class="controls">
+                <button id="startBtn">Start Processing</button>
+                <button id="pauseBtn">Pause</button>
+                <button id="resetBtn">Reset</button>
+            </div>
+        </header>
+        
+        <div class="visualization-container">
+            <div class="raw-data-section">
+                <h2>Raw Data Stream</h2>
+                <div id="circular-buffer" class="data-structure">
+                    <!-- Circular buffer visualization -->
+                </div>
+            </div>
+            
+            <div class="parsed-data-section">
+                <h2>Parsed Streams</h2>
+                <div id="channel-streams" class="data-structure">
+                    <!-- Channel streams will be added here -->
+                </div>
+            </div>
+        </div>
+        
+        <div class="info-panel">
+            <div class="stats">
+                <h3>Statistics</h3>
+                <div id="stats-content">
+                    <p>Packets Processed: <span id="packets-count">0</span></p>
+                    <p>Channels Detected: <span id="channels-count">0</span></p>
+                    <p>Processing Rate: <span id="processing-rate">0</span> packets/sec</p>
+                </div>
+            </div>
+            
+            <div class="packet-details">
+                <h3>Selected Packet Details</h3>
+                <div id="packet-details-content">
+                    <p>Click on a packet to see details</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="visualization.js"></script>
+</body>
+</html>

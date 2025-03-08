@@ -1,0 +1,258 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Arial', sans-serif;
+}
+
+body {
+    background-color: #f5f5f5;
+    color: #333;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #ddd;
+}
+
+header h1 {
+    color: #2c3e50;
+}
+
+.controls {
+    display: flex;
+    gap: 10px;
+}
+
+button {
+    padding: 8px 16px;
+    background-color: #3498db;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+button:hover {
+    background-color: #2980b9;
+}
+
+#pauseBtn {
+    background-color: #e74c3c;
+}
+
+#pauseBtn:hover {
+    background-color: #c0392b;
+}
+
+#resetBtn {
+    background-color: #7f8c8d;
+}
+
+#resetBtn:hover {
+    background-color: #6c7a7d;
+}
+
+.visualization-container {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.raw-data-section, .parsed-data-section {
+    flex: 1;
+    background-color: white;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+h2 {
+    margin-bottom: 15px;
+    color: #2c3e50;
+    font-size: 18px;
+}
+
+.data-structure {
+    min-height: 300px;
+    border: 1px solid #eee;
+    border-radius: 4px;
+    padding: 15px;
+    overflow: auto;
+}
+
+#circular-buffer {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+}
+
+.buffer-item {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #ecf0f1;
+    border-radius: 4px;
+    font-size: 12px;
+    color: #555;
+    cursor: pointer;
+    transition: transform 0.2s, background-color 0.2s;
+}
+
+.buffer-item:hover {
+    transform: scale(1.05);
+    background-color: #dfe4ea;
+}
+
+.buffer-item.active {
+    background-color: #3498db;
+    color: white;
+}
+
+#channel-streams {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.channel {
+    border: 1px solid #eee;
+    border-radius: 4px;
+    padding: 10px;
+}
+
+.channel-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    padding-bottom: 5px;
+    border-bottom: 1px solid #eee;
+}
+
+.channel-name {
+    font-weight: bold;
+    color: #2c3e50;
+}
+
+.channel-type {
+    font-size: 12px;
+    background-color: #3498db;
+    color: white;
+    padding: 2px 6px;
+    border-radius: 10px;
+}
+
+.channel-type.audio {
+    background-color: #9b59b6;
+}
+
+.channel-type.video {
+    background-color: #27ae60;
+}
+
+.stream-packets {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+}
+
+.packet {
+    width: 30px;
+    height: 30px;
+    background-color: #f1c40f;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    cursor: pointer;
+    color: #333;
+    transition: transform 0.2s;
+}
+
+.packet:hover {
+    transform: scale(1.1);
+}
+
+.packet.audio {
+    background-color: #9b59b6;
+    color: white;
+}
+
+.packet.video {
+    background-color: #27ae60;
+    color: white;
+}
+
+.info-panel {
+    display: flex;
+    gap: 20px;
+}
+
+.stats, .packet-details {
+    flex: 1;
+    background-color: white;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+h3 {
+    margin-bottom: 15px;
+    color: #2c3e50;
+    font-size: 16px;
+}
+
+#stats-content p, #packet-details-content p {
+    margin-bottom: 8px;
+    font-size: 14px;
+}
+
+#stats-content span {
+    font-weight: bold;
+    color: #3498db;
+}
+
+#packet-details-content {
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.packet-detail-item {
+    margin-bottom: 5px;
+}
+
+.packet-detail-item span {
+    font-weight: bold;
+}
+
+.byte-display {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2px;
+    margin-top: 5px;
+}
+
+.byte {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    background-color: #ecf0f1;
+    text-align: center;
+    font-family: monospace;
+    font-size: 10px;
+    line-height: 20px;
+}
